@@ -278,4 +278,34 @@ x[n-1] = z[n-1]
 for i in range(n-1,-1,-1):
     x[i] = z[i] - dot(L[i+1:n-1,i].T,x[i+1:n-1])
 
+#ass2
 
+#Cal the inf Norm of Matrix
+def Norm(x):
+    return max(sum(x))
+
+for i in range(5,21):
+    H = Hilbert(i)
+    print(Norm(H))
+
+
+
+def Mat(N):
+    M = np.zeros(shape=(N,N))
+    for i in range(N):
+        for j in range(N):
+            if(i == j):
+                M[i][j] = 1
+            if(i > j):
+                M[i][j] = -1
+    M[:,N-1] = 1
+    return M
+
+for i in range(5,31):
+    b = np.random.rand(i)
+    M = Mat(i)
+    M = LUdecomp(M)
+    b = LUsolve(M,b)
+    print(f"Rank {i} matrix's solution is :\n")
+    print(b)
+    print('\n')
