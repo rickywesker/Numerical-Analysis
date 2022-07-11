@@ -25,21 +25,13 @@ def Poisson(M):
             tmp_A = np.zeros(shape=((M-1),(M-1)),dtype='float64')
             B[eqa_index] = F[i][j]
             tmp_A[i,j] = 4
-            if(i-1<0):
-                pass
-            else:
+            if i >= 1:
                 tmp_A[i-1,j] = -1
-            if(i+1>M-2):
-                pass
-            else:
+            if i + 1 <= M - 2:
                 tmp_A[i+1,j] = -1
-            if(j-1<0):
-                pass
-            else:
+            if j >= 1:
                 tmp_A[i,j-1] = -1
-            if(j+1>M-2):
-                pass
-            else:
+            if j + 1 <= M - 2:
                 tmp_A[i,j+1] = -1
             A[eqa_index] = tmp_A.reshape(-1)
             eqa_index+=1
@@ -67,7 +59,7 @@ def LUsolve(a,b):
     #forward substitution
     n = len(b)
     for k in range(1,n):
-        b[k] = b[k] - dot(a[k,0:k],b[0:k])
+        b[k] = b[k] - dot(a[k,0:k], b[:k])
     #backward substitution
     for k in range(n-1,-1,-1):
         b[k] = (b[k] - dot(a[k,k+1:n],b[k+1:n])) / a[k,k]
@@ -98,7 +90,7 @@ def choleski(a):
 def choleskiSol(L,b):
     n = len(b)
     for k in range(n):
-        b[k] = (b[k] - dot(L[k,0:k],b[0:k]))/L[k,k]
+        b[k] = (b[k] - dot(L[k,0:k], b[:k])) / L[k,k]
     for k in range(n-1,-1,-1):
         b[k] = (b[k] - dot(L[k+1:n,k],b[k+1:n]))/L[k,k]
     return b
@@ -146,9 +138,9 @@ def LDLT(A):
     for i in range(n):
         L[i,i] = 1
     for i in range(n):
-        D[i] = A[i,i] - dot(L[i,0:i]**2,D[0:i])
+        D[i] = A[i,i] - dot(L[i,0:i]**2, D[:i])
         for j in range(i+1,n):
-            L[j,i] = (A[j,i] - dot(L[j,0:i]*L[i,0:i],D[0:i])/D[i])
+            L[j,i] = A[j,i] - dot(L[j,0:i]*L[i,0:i], D[:i]) / D[i]
     return L,D
 
 
@@ -162,7 +154,7 @@ x = np.zeros(shape=(n,1))
 #Ly = b
 y[0] = B[0]
 for i in range(1,n):
-    y[i] = B[i] - np.dot(l[i,0:i],y[0:i])
+    y[i] = B[i] - np.dot(l[i,0:i], y[:i])
 #Dz = y
 for i in range(n):
     z[i] = y[i] / d[i]
@@ -191,14 +183,14 @@ import numpy as np
 def LUdecomp_withPivot(a):
     n = len(a)
     seq = np.array(range(n))
-    
-    for k in range(0,n-1):
+
+    for k in range(n-1):
         #row change
         p = int(np.argmax(a[k:n,k])) + k
         if p != k:
             swapRows(a,k,p)
             swapRows(seq,k,p)
-            
+
         for i in range(k+1,n):
             if a[i,k] != 0:
                 lam = a[i,k] / a[k,k]
@@ -211,9 +203,9 @@ def LUsolve_withPivot(a,b,seq):
     x = b.copy()
     for i in range(n):
         x[i] = b[seq[i]]
-    
+
     for k in range(1,n):
-        x[k] = x[k] - dot(a[k,0:k],x[0:k])
+        x[k] = x[k] - dot(a[k,0:k], x[:k])
     for k in range(n-1,-1,-1):
         x[k] = (x[k] - dot(a[k,k+1:n],x[k+1:n]))/a[k,k]
     return x
@@ -250,9 +242,7 @@ for i in range(40):
         H[i][j] = 1 / (i+j+1)
 H_b = np.zeros(40,dtype='float64')
 for i in range(40):
-    temp_sum = 0
-    for j in range(40):
-        temp_sum += 1 / (i+j+1)
+    temp_sum = sum(1 / (i+j+1) for j in range(40))
     H_b[i] = temp_sum
 
 choleski_H = choleski(H)
@@ -269,7 +259,7 @@ x = np.zeros(shape=(n,1))
 #Ly = b
 y[0] = b[0]
 for i in range(1,n):
-    y[i] = b[i] - dot(L[i,0:i],y[0:i])
+    y[i] = b[i] - dot(L[i,0:i], y[:i])
 #Dz = y
 for i in range(n):
     z[i] = y[i] / D[i]
